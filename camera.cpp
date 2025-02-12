@@ -14,9 +14,9 @@
 #define LED_FLASH_PIN 4
 
 // Servos configuration
-#define SERVO_FREQUENCY  50  // 50HZ
+#define SERVO_FREQUENCY  50.0  // 50HZ
 #define SERVO_RESOLUTION 16 // 16 bits
-#define SERVO_TIMER_WIDTH_TICKS 65536 // 2**SERVO_RESOLUTION)
+#define SERVO_TIMER_WIDTH_TICKS 65536.0 // 2**SERVO_RESOLUTION)
 
 #define SERVO_uS_LOW  1000      // 1000us
 #define SERVO_uS_HIGH 2000      // 2000us
@@ -447,16 +447,16 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
     <body>
     <div class="input-grouptop" id="horizontal-group">
        <label for="horizontal">Horizontal</label>
-       <div class="range-min">-90</div>
-       <input type="range" id="horizontal" min="-90" max="90"  step="20"value="0" class="default-action">
-       <div class="range-max">+90</div>
+       <div class="range-min">-90°</div>
+       <input type="range" id="horizontal" min="-90" max="90" value="0" class="default-action">
+       <div class="range-max">+90°</div>
     </div> 
     <div class="input-grouptop" id="vertical-group">
        <label for="vertical">Vertical</label>
-       <div class="range-min">-90</div>
-       <input type="range" id="vertical" min="-90" max="90" step="20" value="0" class="default-action">
-       <div class="range-max">+90</div>
-    </div>    
+       <div class="range-min">-90°</div>
+       <input type="range" id="vertical" min="-90" max="90" value="0" class="default-action">
+       <div class="range-max">+90°</div>
+    </div> 
     
     <div id="buttons">
       <button class="inline-button" id="capture">Capture</button>
@@ -950,15 +950,14 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
 </html>
 )rawliteral";
 
-bool ServoRotate(uint8_t pin, int8_t angle) { 
+bool ServoRotate(uint8_t pin, int8_t angle, bool counterclockwise) { 
 
- uint16_t us = map(angle, -90, 90, SERVO_uS_LOW, SERVO_uS_HIGH); // convert angle in degree into pulse in micro seconds 
- Serial.print("us: ");Serial.println(us);
-    
- uint32_t ticks = us * SERVO_FREQUENCY * SERVO_TIMER_WIDTH_TICKS/1000000;  // convert pulse in micro seconds to ticks
- Serial.print("ticks: ");Serial.println(ticks);
-    
- return ledcWrite(pin, ticks);                                     
+ if (!counterclockwise) angle = -angle;
+ 
+ uint32_t us = map(angle, -90, 90, SERVO_uS_LOW, SERVO_uS_HIGH); // convert angle in degree into pulse in micro seconds    
+ double ticks = us * SERVO_FREQUENCY * SERVO_TIMER_WIDTH_TICKS/1000000.0;  // convert pulse in micro seconds to ticks
+   
+ return ledcWrite(pin, (uint32_t)ticks);                                     
 }
 
 static int print_reg(char *p, sensor_t *s, uint16_t reg, uint32_t mask) {
@@ -1255,9 +1254,9 @@ static esp_err_t control_handler(httpd_req_t *req) {
   int res = 0;
   
   if (!strcmp(variable, "horizontal")) {
-    if(!ServoRotate(SERVO_PIN_H, val)) Serial.println("Error ServoRotate horizontal");
+    if(!ServoRotate(SERVO_PIN_H, val, false)) Serial.println("Error ServoRotate horizontal");
   } else if (!strcmp(variable, "vertical")) {
-        if(!ServoRotate(SERVO_PIN_V, val)) Serial.println("Error ServoRotate vertical");
+        if(!ServoRotate(SERVO_PIN_V, val, false)) Serial.println("Error ServoRotate vertical");
   } else if (!strcmp(variable, "framesize")) {
     res = s->set_framesize(s, (framesize_t)val);
   } else if (!strcmp(variable, "quality")) {
