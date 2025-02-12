@@ -953,8 +953,11 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
 bool ServoRotate(uint8_t pin, int8_t angle) { 
 
  uint16_t us = map(angle, -90, 90, SERVO_uS_LOW, SERVO_uS_HIGH); // convert angle in degree into pulse in micro seconds 
- uint16_t ticks = us * SERVO_FREQUENCY * SERVO_TIMER_WIDTH_TICKS/1000000;  // convert pulse in micro seconds to ticks
- 
+ Serial.print("us: ");Serial.println(us);
+    
+ uint32_t ticks = us * SERVO_FREQUENCY * SERVO_TIMER_WIDTH_TICKS/1000000;  // convert pulse in micro seconds to ticks
+ Serial.print("ticks: ");Serial.println(ticks);
+    
  return ledcWrite(pin, ticks);                                     
 }
 
